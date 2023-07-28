@@ -16,6 +16,12 @@ use App\Http\Controllers\EmployeeController;
 */
 
 Route::post('/store/url', [EmployeeController::class, 'storeByUrl']);
+Route::get('/employees', [EmployeeController::class, 'getData']);
+Route::post('/employees/create', [EmployeeController::class, 'store']);
+Route::post('/employees/update', [EmployeeController::class, 'update']);
+Route::delete('/employees/delete/{id}', [EmployeeController::class, 'destroy']);
+
+
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

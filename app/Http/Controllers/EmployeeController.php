@@ -21,7 +21,6 @@ class EmployeeController extends Controller
         $jsonData = $this->fetchJsonResponse($url);
 
         if (!empty($jsonData)) {
-            Cache::tags('employees')->flush();
 
             foreach ($jsonData as $employeeData) {
                 $employee = new Employee([
@@ -32,27 +31,14 @@ class EmployeeController extends Controller
                 ]);
                 $employee->save();
             }
-
+            Cache::flush();
             return response()->json(['message' => 'Employee data stored successfully'], 201);
         }
 
         return response()->json(['message' => 'Failed to fetch JSON data from the URL or no data found'], 500);
     }
 
-    private function fetchJsonResponse($url)
-    {
-        try {
-            $client = new Client();
-            $response = $client->get($url);
 
-            if ($response->getStatusCode() === 200) {
-                return json_decode($response->getBody(), true);
-            }
-        } catch (\Exception $e) {
-        }
-
-        return null;
-    }
 
     public function getData(Request $request)
     {
@@ -106,7 +92,8 @@ class EmployeeController extends Controller
 
         $employee = Employee::create($request->all());
 
-        Cache::tags('employees')->forget('employees_' . md5(URL::full() . json_encode($request->all())));
+        $cacheKey = 'employees_' . md5(URL::full() . json_encode($request->all()));
+        Cache::flush();
 
         return $this->sendResponse(0, 'Employee created successfully', $employee);
     }
@@ -129,7 +116,8 @@ class EmployeeController extends Controller
         $employee = Employee::findOrFail($id);
         $employee->update($request->all());
 
-        Cache::tags('employees')->forget('employees_' . md5(URL::full() . json_encode($request->all())));
+        $cacheKey = 'employees_' . md5(URL::full() . json_encode($request->all()));
+        Cache::flush();
 
         return $this->sendResponse(0, 'Employee updated successfully', $employee);
     }
@@ -139,9 +127,41 @@ class EmployeeController extends Controller
         $employee = Employee::findOrFail($id);
         $employee->delete();
 
-        Cache::tags('employees')->flush();
+        $cacheKey = 'employees_' . md5(URL::full() . json_encode($id));
+        Cache::flush();
 
         return $this->sendResponse(0, 'Employee deleted successfully', []);
+    }
+
+
+
+
+    public function getAllAlamat()
+    {
+        $uniqueAlamat = Employee::pluck('alamat')->unique()->values()->all();
+        return response()->json($uniqueAlamat);
+    }
+
+    public function getAllJabatan()
+    {
+        $uniqueJabatan = Employee::pluck('jabatan')->unique()->values()->all();
+        return response()->json($uniqueJabatan);
+    }
+
+
+    private function fetchJsonResponse($url)
+    {
+        try {
+            $client = new Client();
+            $response = $client->get($url);
+
+            if ($response->getStatusCode() === 200) {
+                return json_decode($response->getBody(), true);
+            }
+        } catch (\Exception $e) {
+        }
+
+        return null;
     }
 
     private function sendResponse($code, $message, $data)

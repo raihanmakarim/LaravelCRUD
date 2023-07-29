@@ -20,6 +20,8 @@ Route::get('/employees', [EmployeeController::class, 'getData']);
 Route::post('/employees/create', [EmployeeController::class, 'store']);
 Route::post('/employees/update/{id}', [EmployeeController::class, 'update']);
 Route::delete('/employees/delete/{id}', [EmployeeController::class, 'destroy']);
+Route::get('/jabatan', [EmployeeController::class, 'getAllJabatan']);
+Route::get('/alamat', [EmployeeController::class, 'getAllAlamat']);
 
 
 
